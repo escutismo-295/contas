@@ -3,8 +3,8 @@
 Duas apps para telemóvel que registam todo o dinheiro do agrupamento: o que entra, o que sai,
 **com quem está** e o que falta acertar entre os chefes e o tesoureiro. Custo: zero.
 
-- **App dos chefes**: `https://<utilizador>.github.io/<repositório>/`
-- **App da tesouraria**: `https://<utilizador>.github.io/<repositório>/tesouraria.html`
+- **App dos chefes**: <https://escutismo-295.github.io/contas/>
+- **App da tesouraria**: <https://escutismo-295.github.io/contas/tesouraria.html>
 
 ```
 Telemóveis ──► GitHub Pages (docs/) ──► Apps Script ──► Google Sheet "Contas do Agrupamento"
