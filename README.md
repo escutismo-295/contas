@@ -74,6 +74,10 @@ O GitHub Pages serve a pasta `/docs` do ramo `main` (Settings → Pages).
 Estados de um movimento: `Confirmado`, `Por confirmar` (à espera do tesoureiro), `Recusado`, `Anulado`.
 Para corrigir um erro diretamente na folha, muda o *Estado* para `Anulado` em vez de apagar a linha.
 
+As faturas ficam em *Faturas do Agrupamento / <ano letivo>*. Quando um movimento é anulado na app, ou o
+tesoureiro recusa uma despesa, a fatura passa para a subpasta **Anuladas** (não é apagada); se o tesoureiro
+desfizer a recusa, volta para a pasta do ano.
+
 ## Partilhar
 
 - **Chefes:** link da app + PIN. Na primeira vez escolhem o nome da lista; fica memorizado.

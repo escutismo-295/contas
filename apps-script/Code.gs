@@ -51,6 +51,7 @@ const FOLHA_SALDOS = 'Saldos dos chefes';
 
 const NOME_PASTA_RAIZ = 'Faturas do Agrupamento';
 const NOME_FOLHA = 'Contas do Agrupamento';
+const PASTA_ANULADAS = 'Anuladas';
 const FUSO = 'Europe/Lisbon';
 
 const TIPOS_FICHEIRO = {
@@ -595,7 +596,7 @@ function lerFicheiro(f) {
 
 function guardarFatura(l) {
   const raiz = DriveApp.getFolderById(PropertiesService.getScriptProperties().getProperty('PASTA_ID'));
-  const pasta = obterPastaAno(raiz, anoLetivo(l.data));
+  const pasta = obterSubpasta(raiz, anoLetivo(l.data));
   const nome = [
     Utilities.formatDate(l.data, FUSO, 'yyyy-MM-dd'),
     l.seccao,
@@ -653,6 +654,7 @@ function anular(p) {
     const folha = ss.getSheetByName(FOLHA_MOV);
     [m].concat(movs.filter(x => m.ligadoA && x.id === m.ligadoA)).forEach(x => {
       folha.getRange(x.linha, C['Estado'] + 1).setValue(ESTADO.ANULADO);
+      arrumarFatura(x, true);
     });
     SpreadsheetApp.flush();
     return { ok: true };
@@ -795,16 +797,36 @@ function tesourariaFoto(p) {
   return resultado;
 }
 
+/** Só aceita ficheiros dentro da pasta do projeto (raiz / ano / Anuladas). */
 function estaNaPastaDasFaturas(ficheiro) {
   const raiz = PropertiesService.getScriptProperties().getProperty('PASTA_ID');
-  const pais = ficheiro.getParents();
-  while (pais.hasNext()) {
-    const pai = pais.next();
-    if (pai.getId() === raiz) return true;
-    const avos = pai.getParents();
-    while (avos.hasNext()) if (avos.next().getId() === raiz) return true;
+  const subir = (pastas, niveis) => {
+    while (pastas.hasNext()) {
+      const pasta = pastas.next();
+      if (pasta.getId() === raiz) return true;
+      if (niveis > 1 && subir(pasta.getParents(), niveis - 1)) return true;
+    }
+    return false;
+  };
+  return subir(ficheiro.getParents(), 3);
+}
+
+/**
+ * Faturas de movimentos anulados ou recusados vão para "<ano>/Anuladas", para não se
+ * confundirem com as válidas. Não se apaga nada: se a anulação for desfeita, a fatura volta.
+ */
+function arrumarFatura(m, anulada) {
+  if (!m.fileId) return;
+  try {
+    const ficheiro = DriveApp.getFileById(m.fileId);
+    if (!estaNaPastaDasFaturas(ficheiro)) return;
+    const raiz = DriveApp.getFolderById(PropertiesService.getScriptProperties().getProperty('PASTA_ID'));
+    const pastaAno = obterSubpasta(raiz, m.ano);
+    ficheiro.moveTo(anulada ? obterSubpasta(pastaAno, PASTA_ANULADAS) : pastaAno);
+  } catch (err) {
+    // Se a fatura já não existir ou não der para mover, o movimento fica anulado na mesma
+    console.error('Não foi possível arrumar a fatura ' + m.fileId + ': ' + err);
   }
-  return false;
 }
 
 function tesourariaConfirmar(p) {
@@ -816,6 +838,7 @@ function tesourariaConfirmar(p) {
     const folha = ss.getSheetByName(FOLHA_MOV);
     folha.getRange(m.linha, C['Estado'] + 1).setValue(p.aceitar === true ? ESTADO.CONFIRMADO : ESTADO.RECUSADO);
     folha.getRange(m.linha, C['Tratado em'] + 1).setValue(new Date());
+    if (p.aceitar !== true) arrumarFatura(m, true);
     SpreadsheetApp.flush();
     return { ok: true };
   });
@@ -877,6 +900,7 @@ function tesourariaDesfazer(p) {
     } else {
       folha.getRange(m.linha, C['Estado'] + 1).setValue(ESTADO.POR_CONFIRMAR);
       folha.getRange(m.linha, C['Tratado em'] + 1).setValue('');
+      if (m.estado === ESTADO.RECUSADO) arrumarFatura(m, false);
     }
     SpreadsheetApp.flush();
     return { ok: true };
@@ -906,9 +930,9 @@ function anoLetivo(data) {
   return inicio + '-' + String((inicio + 1) % 100).padStart(2, '0');
 }
 
-function obterPastaAno(raiz, ano) {
-  const it = raiz.getFoldersByName(ano);
-  return it.hasNext() ? it.next() : raiz.createFolder(ano);
+function obterSubpasta(pai, nome) {
+  const it = pai.getFoldersByName(nome);
+  return it.hasNext() ? it.next() : pai.createFolder(nome);
 }
 
 function idExiste(folha, id) {
