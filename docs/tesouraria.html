@@ -143,6 +143,7 @@
     input:focus { outline: none; border-color: var(--verde); }
     label { display: block; font-weight: 700; margin-bottom: 10px; font-size: 22px; }
 
+    a.btn { text-decoration: none; line-height: 40px; }
     .link { background: none; border: none; color: var(--suave); text-decoration: underline; font-size: 18px; padding: 16px; display: block; margin: 16px auto 0; }
 
     .ampliar { position: fixed; inset: 0; background: #000; z-index: 20; display: flex; flex-direction: column; }
@@ -171,6 +172,7 @@
         <div id="erro-pin" class="alerta" style="margin-top:14px" hidden></div>
         <div class="botoes" style="margin-top:16px"><button class="btn" type="submit">Entrar</button></div>
       </form>
+      <a class="btn btn-sec" href="./">Ir para as Contas dos dirigentes</a>
     </section>
 
     <nav id="separadores" class="separadores" role="tablist" hidden>
@@ -223,7 +225,10 @@
     <!-- Resumo dos fundos -->
     <section id="ecra-resumo" class="ecra" hidden>
       <div id="lista-fundos"></div>
-      <button class="btn btn-sec" type="button" id="btn-atualizar">Atualizar</button>
+      <div class="botoes">
+        <button class="btn btn-sec" type="button" id="btn-atualizar">Atualizar</button>
+        <a class="btn btn-sec" href="./">Ir para as Contas dos dirigentes</a>
+      </div>
       <button type="button" class="link" id="btn-sair">Sair (esquecer o PIN neste aparelho)</button>
     </section>
 
